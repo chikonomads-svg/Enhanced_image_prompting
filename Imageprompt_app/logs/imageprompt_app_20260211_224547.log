@@ -1,0 +1,8 @@
+2026-02-11 22:45:47,422 - logic - INFO - Logging initialized. Log file: c:\Users\Komal\OneDrive\Desktop\Vibe Coding\Imageprompt_app\logs\imageprompt_app_20260211_224547.log
+2026-02-11 22:46:09,133 - logic - INFO - Tavily client initialized successfully
+2026-02-11 22:46:09,134 - logic - INFO - Starting trending topics research for: vibe coding post for instagram
+2026-02-11 22:46:18,872 - logic - INFO - Found 10 trending topics for: vibe coding post for instagram
+2026-02-11 22:46:34,874 - logic - INFO - Deep researching single topic: 5 Vibe Coding Trends You Can't Afford to Miss in 2026
+2026-02-11 22:46:40,926 - logic - INFO - Completed deep research for topic: 5 Vibe Coding Trends You Can't Afford to Miss in 2026
+2026-02-11 22:46:40,990 - logic - INFO - Generating 10 Instagram prompts for: 5 Vibe Coding Trends You Can't Afford to Miss in 2026
+2026-02-11 22:46:40,990 - logic - INFO - Generated 10 Instagram-optimized prompts

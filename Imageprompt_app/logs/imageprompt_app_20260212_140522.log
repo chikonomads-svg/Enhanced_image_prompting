@@ -1,0 +1,5 @@
+2026-02-12 14:05:22,410 - logic - INFO - Logging initialized
+2026-02-12 14:05:30,599 - logic - INFO - Tavily client initialized
+2026-02-12 14:05:30,600 - logic - INFO - Researching 2025 topics for: vibe coding post for instagram
+2026-02-12 14:06:00,656 - logic - INFO - Deep researching 2025 data for: My 2025 highlight: Letting my creativity breathe through Vibe Coding ...
+2026-02-12 14:10:25,869 - logic - ERROR - Error: HTTPSConnectionPool(host='chikoai.services.ai.azure.com', port=443): Read timed out. (read timeout=120)
