@@ -1,8 +1,0 @@
-2026-02-12 12:51:38,736 - logic - INFO - Logging initialized. Log file: c:\Users\Komal\OneDrive\Desktop\Vibe Coding\Imageprompt_app\logs\imageprompt_app_20260212_125138.log
-2026-02-12 12:51:47,691 - logic - INFO - Tavily client initialized successfully
-2026-02-12 12:51:47,692 - logic - INFO - Starting trending topics research for: vibe coding post for instagram
-2026-02-12 12:51:56,979 - logic - INFO - Found 10 trending topics for: vibe coding post for instagram
-2026-02-12 12:52:02,131 - logic - INFO - Deep researching single topic: Vibe coding. AI House Style. UX vs MX. AI and creativity ... - Instagram
-2026-02-12 12:53:02,968 - logic - INFO - Completed deep research for topic: Vibe coding. AI House Style. UX vs MX. AI and creativity ... - Instagram
-2026-02-12 12:53:02,970 - logic - INFO - Generating 10 Instagram prompts with details for: Vibe coding. AI House Style. UX vs MX. AI and creativity ... - Instagram
-2026-02-12 12:53:02,973 - logic - INFO - Generated 10 Instagram prompts with brief details
