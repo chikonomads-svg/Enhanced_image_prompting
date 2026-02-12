@@ -15,6 +15,7 @@ from logic import (
     ImagePromptResearcher, UniversalImageGenerator, LLMClient,
     LLM_PROVIDERS, IMAGE_PROVIDERS, get_recent_logs, read_log_file
 )
+from image_text_overlay import add_text_to_slide
 
 st.set_page_config(
     page_title="2026 Trending PPT Creator",
@@ -471,7 +472,7 @@ def step_3_edit_and_generate():
     if not st.session_state.image_configured:
         st.warning("⚠️ Please configure an Image Model in the sidebar first (Model Settings → Image Generation)")
     else:
-        st.info("💡 **Note:** Images are generated as text-free backgrounds. The actual slide content text should be added separately in your presentation software (PowerPoint, Canva, etc.).")
+        st.info("💡 **Note:** Images are generated with AI backgrounds + programmatically added readable text using PIL/Pillow.")
     
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -576,9 +577,20 @@ def step_3_edit_and_generate():
 
 
 def generate_slide_image(slide_num: int):
-    """Generate image using the configured image generator."""
+    """Generate image with background + programmatically added text."""
     if not st.session_state.image_configured:
         st.error("Please configure an image model first in the sidebar!")
+        return
+    
+    # Get the slide data
+    slide_data = None
+    for prompt_data in st.session_state.ppt_prompts:
+        if prompt_data['slide_number'] == slide_num:
+            slide_data = prompt_data
+            break
+    
+    if not slide_data:
+        st.error(f"Slide {slide_num} data not found!")
         return
     
     prompt = st.session_state.finalized_prompts.get(
@@ -588,20 +600,36 @@ def generate_slide_image(slide_num: int):
     
     with st.spinner(f"🎨 Generating image for Slide {slide_num}... This may take 2-4 minutes"):
         try:
-            b64_image = st.session_state.image_generator.generate_image(
+            # Step 1: Generate background image
+            b64_background = st.session_state.image_generator.generate_image(
                 prompt=prompt, 
                 width=1024, 
                 height=1024
             )
             
-            if b64_image:
-                st.session_state.generated_images[slide_num] = b64_image
-                st.success(f"✅ Slide {slide_num} image generated successfully!")
-                st.rerun()
-            else:
-                st.error(f"❌ Failed to generate image. Please check your API key and try again.")
+            if not b64_background:
+                st.error(f"❌ Failed to generate background image. Please check your API key and try again.")
+                return
+            
+            # Step 2: Add text overlay using PIL
+            st.info(f"📝 Adding readable text to Slide {slide_num}...")
+            
+            final_image = add_text_to_slide(
+                background_b64=b64_background,
+                slide_title=slide_data['title'],
+                content=slide_data['content'],
+                slide_number=slide_num,
+                total_slides=10
+            )
+            
+            st.session_state.generated_images[slide_num] = final_image
+            st.success(f"✅ Slide {slide_num} image with text generated successfully!")
+            st.rerun()
+            
         except Exception as e:
             st.error(f"❌ Error: {str(e)}")
+            import traceback
+            st.error(traceback.format_exc())
 
 
 def main():

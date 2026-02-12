@@ -565,75 +565,66 @@ class ImagePromptResearcher:
         return ascii_chars / len(text) > 0.7 if text else True
     
     def generate_ppt_prompts(self, slides_data: List[Dict[str, Any]], main_topic: str = "") -> List[Dict[str, str]]:
-        """Generate image prompts for each slide - includes actual researched content for accurate visuals."""
+        """Generate image prompts for clean infographic-style backgrounds (text will be added programmatically)."""
         prompts = []
         
-        # Enhanced futuristic backgrounds that fill the space
-        futuristic_backgrounds = [
-            "vibrant neon cyan magenta gradient flowing waves, holographic light beams, digital particles, abstract tech patterns, luminous energy streams, 4K, cinematic lighting",
-            "cyberpunk purple electric blue glowing circuit board patterns, neon grid lines, floating geometric shapes, laser beams, futuristic metropolis vibe, 4K",
-            "sci-fi dark space with neon cyan and magenta nebula clouds, stars, cosmic dust, holographic interfaces, deep blue black background, 4K cinematic",
-            "holographic silver and teal digital wave grid, 3D floating hexagons, light refractions, futuristic data streams, premium tech aesthetic, 4K",
-            "matrix-style flowing green code rain with cyan accents, digital rain particles, cyber network visualization, dark background, 4K",
-            "metallic gold and black luxury gradient, geometric golden lines, premium abstract patterns, glowing orbs, executive style, 4K",
-            "electric orange and white geometric shards, modern angular shapes, dynamic energy bursts, clean minimalist futuristic, 4K",
-            "deep space blue with constellation lines, glowing nodes connected by light beams, neural network visualization, cosmic theme, 4K",
-            "coral and navy blue gradient with 3D floating crystal shapes, soft glowing edges, modern abstract art, warm and cool contrast, 4K",
-            "black background with rainbow gradient light streaks, prismatic light effects, colorful laser beams, vibrant energy lines, 4K"
+        # Clean, professional backgrounds suitable for text overlay
+        # These are designed to have good contrast and space for text
+        clean_backgrounds = [
+            "professional presentation slide background, deep blue to purple gradient, subtle geometric patterns, corporate style, minimalist, clean layout with empty space for text, high quality, 4K",
+            "modern business presentation background, dark teal to cyan gradient, soft abstract shapes, professional infographic style, ample white space for content, 4K quality",
+            "sleek corporate slide background, navy blue with subtle orange accents, minimalist design, clean geometric elements, plenty of room for text overlay, professional 4K",
+            "professional infographic background, dark charcoal to slate gray gradient, subtle tech patterns, modern business style, generous empty space for text, 4K",
+            "modern presentation slide, deep purple to magenta gradient, soft glowing elements, corporate professional style, clean layout with space for content, 4K quality",
+            "business presentation background, dark blue with gold accents, elegant minimal design, subtle luxury patterns, ample space for text overlay, professional 4K",
+            "professional slide background, deep green to teal gradient, nature-tech fusion, clean minimalist style, plenty of empty space for text, 4K quality",
+            "corporate presentation background, dark red to burgundy gradient, subtle geometric textures, professional style, clean layout with room for content, 4K",
+            "modern business slide, dark gray to silver gradient, sleek tech aesthetic, minimalist professional design, generous space for text overlay, 4K",
+            "professional infographic background, deep indigo to violet gradient, subtle abstract patterns, corporate style, clean with ample text space, 4K quality"
         ]
         
-        # Topic-specific visual elements mapping
-        topic_visuals = {
-            "AI": "neural networks, brain circuits, artificial intelligence nodes, machine learning patterns, robot head, digital brain",
-            "artificial intelligence": "neural networks, brain circuits, artificial intelligence nodes, machine learning patterns, robot head, digital brain",
-            "coding": "code brackets, programming symbols, developer tools, software interfaces, terminal window, code editor",
-            "programming": "code brackets, programming symbols, developer tools, software interfaces, terminal window, code editor",
-            "trends": "upward arrows, growth charts, innovation symbols, future icons, trending graphs, data visualization",
-            "business": "graph lines, professional icons, success symbols, corporate aesthetics, briefcase, handshake, growth chart",
-            "technology": "chips, processors, digital interfaces, smart devices, circuit boards, futuristic gadgets",
-            "future": "time portals, forward arrows, innovation sparks, tomorrow symbols, futuristic city, flying cars",
-            "benefits": "checkmarks, success icons, trophy, achievement badges, positive arrows, growth symbols",
-            "challenges": "warning signs, puzzle pieces, problem solving icons, obstacle course, solution path",
-            "tools": "wrench, toolbox, gear icons, settings, configuration panels, equipment",
-            "statistics": "bar charts, pie charts, data visualization, numbers display, analytics dashboard",
-            "getting started": "starting line, first step, beginner path, launch pad, rocket launch",
-            "implementation": "roadmap, journey path, step by step, process flow, construction building"
+        # Subtle visual elements that don't interfere with text
+        subtle_visuals = {
+            "AI": "subtle neural network patterns in corners",
+            "artificial intelligence": "subtle neural network patterns in corners",
+            "coding": "faint code symbols as watermark",
+            "programming": "faint code symbols as watermark",
+            "trends": "subtle upward arrow motifs",
+            "business": "minimalist graph line accents",
+            "technology": "subtle circuit board texture",
+            "future": "faint forward arrow watermarks",
+            "benefits": "subtle checkmark icons in corners",
+            "challenges": "minimalist warning icon accents",
+            "tools": "subtle gear icons as decoration",
+            "statistics": "faint chart grid pattern",
+            "getting started": "subtle roadmap line accents",
+            "implementation": "minimalist process flow lines"
         }
         
         for i, slide in enumerate(slides_data):
             title = slide["title"]
             content = slide["content"]
-            background = futuristic_backgrounds[i % len(futuristic_backgrounds)]
+            background = clean_backgrounds[i % len(clean_backgrounds)]
             num = slide.get("slide_number", i + 1)
             
-            # Extract key content points for visual representation
-            content_text = ""
-            if isinstance(content, list):
-                # Join content points for the prompt
-                content_text = " | ".join([str(item)[:100] for item in content[:3]])
-            else:
-                content_text = str(content)[:200]
-            
-            # Determine topic keywords from title and main topic
+            # Determine subtle visual elements
             title_lower = (title + " " + main_topic).lower()
             extra_visuals = ""
-            matched_keywords = []
             
-            for keyword, visuals in topic_visuals.items():
-                if keyword in title_lower and keyword not in matched_keywords:
-                    matched_keywords.append(keyword)
-                    extra_visuals += f", {visuals}"
+            for keyword, visuals in subtle_visuals.items():
+                if keyword in title_lower:
+                    extra_visuals = f", {visuals}"
+                    break
             
-            # Create enhanced prompt with ACTUAL content context
+            # Create prompt for clean background (NO TEXT - will be added programmatically)
             prompt = (
-                f"Professional presentation background for slide about '{title}'. "
-                f"Context: {content_text}. "
-                f"Visual theme: {background}{extra_visuals}. "
-                f"Style elements: futuristic, modern, high-tech, professional, 4K quality, cinematic lighting. "
-                f"NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS, NO ALPHABET - completely text-free abstract background. "
-                f"Large bold visual elements filling the frame, generous spacing, big geometric shapes, "
-                f"high contrast, vibrant saturated colors, professional presentation background, "
-                f"16:9 widescreen format, 4K ultra HD, perfect for text overlay"
+                f"Professional business presentation slide background. "
+                f"{background}{extra_visuals}. "
+                f"CRITICAL: NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS anywhere in the image. "
+                f"Must be completely empty of text - text will be added later programmatically. "
+                f"Clean layout with large empty areas suitable for text overlay. "
+                f"High contrast between background and potential white text. "
+                f"Corporate professional style, minimalist, 4K quality, 16:9 format"
             )
             
             prompts.append({
