@@ -36,6 +36,53 @@ st.markdown("""
     .settings-card { background: linear-gradient(135deg, #2d3436 0%, #636e72 100%); border-radius: 10px; padding: 15px; margin: 10px 0; }
     .provider-badge { background: #0984e3; color: white; padding: 3px 10px; border-radius: 15px; font-size: 0.8rem; }
     .status-badge { background: #00b894; color: white; padding: 3px 10px; border-radius: 15px; font-size: 0.8rem; }
+    
+    /* Workflow Step Styles */
+    .workflow-step {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+        font-size: 0.9rem;
+    }
+    .workflow-step.completed {
+        color: #00b894;
+        font-weight: 500;
+    }
+    .workflow-step.current {
+        color: #0984e3;
+        font-weight: 600;
+    }
+    .workflow-step.pending {
+        color: #636e72;
+    }
+    .step-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        font-size: 12px;
+    }
+    .step-icon.completed {
+        background: #00b894;
+        color: white;
+    }
+    .step-icon.current {
+        background: #0984e3;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    .step-icon.pending {
+        background: #dfe6e9;
+        color: #636e72;
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(9, 132, 227, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0); }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -281,23 +328,65 @@ def render_model_settings_sidebar():
         st.markdown("---")
         
         # ==================== WORKFLOW INFO ====================
-        st.markdown("### 📋 Workflow")
-        st.write("""
-        1️⃣ Configure Models (above)  
-        2️⃣ Research 2026 trends  
-        3️⃣ Select topic  
-        4️⃣ Edit prompt  
-        5️⃣ 🔄 Regenerate (if needed)  
-        6️⃣ ✅ Finalize prompt  
-        7️⃣ 🎨 Generate image  
-        8️⃣ 📥 Download PNG
-        """)
+        st.markdown("### 📋 Workflow Progress")
         
-        # Status
+        # Define workflow steps
+        workflow_steps = [
+            ("Configure Models", st.session_state.llm_configured and st.session_state.image_configured, 1),
+            ("Research 2026 Trends", st.session_state.current_step >= 2, 2),
+            ("Select Topic", st.session_state.selected_topic is not None, 3),
+            ("Generate Slides", st.session_state.current_step >= 3 and len(st.session_state.ppt_prompts) > 0, 4),
+            ("Edit Prompts", st.session_state.current_step >= 3 and len(st.session_state.edited_prompts) > 0, 5),
+            ("Finalize Prompts", len(st.session_state.finalized_prompts) > 0, 6),
+            ("Generate Images", len(st.session_state.generated_images) > 0, 7),
+            ("Download PNGs", len(st.session_state.generated_images) == 10, 8),
+        ]
+        
+        # Determine current active step
+        current_step_num = st.session_state.current_step
+        if st.session_state.selected_topic and st.session_state.current_step == 3:
+            if len(st.session_state.generated_images) == 10:
+                current_step_num = 8  # All done
+            elif len(st.session_state.generated_images) > 0:
+                current_step_num = 7  # Generating images
+            elif len(st.session_state.finalized_prompts) > 0:
+                current_step_num = 6  # Finalizing
+            elif len(st.session_state.edited_prompts) > 0:
+                current_step_num = 5  # Editing
+        
+        # Render workflow steps
+        for step_name, is_completed, step_num in workflow_steps:
+            if is_completed:
+                status_class = "completed"
+                icon = "✓"
+                icon_class = "completed"
+            elif step_num == current_step_num or (step_num == 3 and st.session_state.current_step == 2 and st.session_state.trending_topics):
+                status_class = "current"
+                icon = "●"
+                icon_class = "current"
+            else:
+                status_class = "pending"
+                icon = "○"
+                icon_class = "pending"
+            
+            st.markdown(f"""
+            <div class="workflow-step {status_class}">
+                <span class="step-icon {icon_class}">{icon}</span>
+                <span>{step_name}</span>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Status Summary
         st.markdown("---")
         st.markdown("### 📊 Status")
         finalized_count = len(st.session_state.finalized_prompts)
-        st.markdown(f"**Slides Finalized:** {finalized_count}/10")
+        generated_count = len(st.session_state.generated_images)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"**Finalized:** {finalized_count}/10")
+        with col2:
+            st.markdown(f"**Generated:** {generated_count}/10")
         
         if st.session_state.llm_configured:
             st.markdown(f"**LLM:** <span class='provider-badge'>{LLM_PROVIDERS[st.session_state.llm_provider]['name']}</span>", unsafe_allow_html=True)
@@ -359,7 +448,10 @@ def step_2_select_topic():
                 with st.spinner(f"Researching 2026 data for '{topic['title']}'..."):
                     try:
                         st.session_state.slides_data = st.session_state.researcher.research_dynamic_slides(topic['title'])
-                        st.session_state.ppt_prompts = st.session_state.researcher.generate_ppt_prompts(st.session_state.slides_data)
+                        st.session_state.ppt_prompts = st.session_state.researcher.generate_ppt_prompts(
+                            st.session_state.slides_data, 
+                            main_topic=topic['title']
+                        )
                         st.session_state.edited_prompts = {p['slide_number']: p['prompt'] for p in st.session_state.ppt_prompts}
                         st.session_state.finalized_prompts = {}
                         st.session_state.current_step = 3

@@ -564,8 +564,8 @@ class ImagePromptResearcher:
         ascii_chars = sum(1 for c in text if ord(c) < 128)
         return ascii_chars / len(text) > 0.7 if text else True
     
-    def generate_ppt_prompts(self, slides_data: List[Dict[str, Any]]) -> List[Dict[str, str]]:
-        """Generate image prompts for each slide - optimized for text-free backgrounds."""
+    def generate_ppt_prompts(self, slides_data: List[Dict[str, Any]], main_topic: str = "") -> List[Dict[str, str]]:
+        """Generate image prompts for each slide - includes actual researched content for accurate visuals."""
         prompts = []
         
         # Enhanced futuristic backgrounds that fill the space
@@ -582,14 +582,22 @@ class ImagePromptResearcher:
             "black background with rainbow gradient light streaks, prismatic light effects, colorful laser beams, vibrant energy lines, 4K"
         ]
         
-        # Topic-specific visual elements to add
+        # Topic-specific visual elements mapping
         topic_visuals = {
-            "AI": "neural networks, brain circuits, artificial intelligence nodes, machine learning patterns",
-            "coding": "code brackets, programming symbols, developer tools, software interfaces",
-            "trends": "upward arrows, growth charts, innovation symbols, future icons",
-            "business": "graph lines, professional icons, success symbols, corporate aesthetics",
-            "technology": "chips, processors, digital interfaces, smart devices",
-            "future": "time portals, forward arrows, innovation sparks, tomorrow symbols"
+            "AI": "neural networks, brain circuits, artificial intelligence nodes, machine learning patterns, robot head, digital brain",
+            "artificial intelligence": "neural networks, brain circuits, artificial intelligence nodes, machine learning patterns, robot head, digital brain",
+            "coding": "code brackets, programming symbols, developer tools, software interfaces, terminal window, code editor",
+            "programming": "code brackets, programming symbols, developer tools, software interfaces, terminal window, code editor",
+            "trends": "upward arrows, growth charts, innovation symbols, future icons, trending graphs, data visualization",
+            "business": "graph lines, professional icons, success symbols, corporate aesthetics, briefcase, handshake, growth chart",
+            "technology": "chips, processors, digital interfaces, smart devices, circuit boards, futuristic gadgets",
+            "future": "time portals, forward arrows, innovation sparks, tomorrow symbols, futuristic city, flying cars",
+            "benefits": "checkmarks, success icons, trophy, achievement badges, positive arrows, growth symbols",
+            "challenges": "warning signs, puzzle pieces, problem solving icons, obstacle course, solution path",
+            "tools": "wrench, toolbox, gear icons, settings, configuration panels, equipment",
+            "statistics": "bar charts, pie charts, data visualization, numbers display, analytics dashboard",
+            "getting started": "starting line, first step, beginner path, launch pad, rocket launch",
+            "implementation": "roadmap, journey path, step by step, process flow, construction building"
         }
         
         for i, slide in enumerate(slides_data):
@@ -598,23 +606,34 @@ class ImagePromptResearcher:
             background = futuristic_backgrounds[i % len(futuristic_backgrounds)]
             num = slide.get("slide_number", i + 1)
             
-            # Determine topic keywords for better visuals
-            title_lower = title.lower()
-            extra_visuals = ""
-            for keyword, visuals in topic_visuals.items():
-                if keyword in title_lower:
-                    extra_visuals = f", {visuals}"
-                    break
+            # Extract key content points for visual representation
+            content_text = ""
+            if isinstance(content, list):
+                # Join content points for the prompt
+                content_text = " | ".join([str(item)[:100] for item in content[:3]])
+            else:
+                content_text = str(content)[:200]
             
-            # Create enhanced prompt - NO TEXT, larger visuals to fill space
+            # Determine topic keywords from title and main topic
+            title_lower = (title + " " + main_topic).lower()
+            extra_visuals = ""
+            matched_keywords = []
+            
+            for keyword, visuals in topic_visuals.items():
+                if keyword in title_lower and keyword not in matched_keywords:
+                    matched_keywords.append(keyword)
+                    extra_visuals += f", {visuals}"
+            
+            # Create enhanced prompt with ACTUAL content context
             prompt = (
-                f"Abstract futuristic background for presentation slide about '{title}'. "
-                f"{background}{extra_visuals}. "
-                f"NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS, NO ALPHABET, completely text-free image. "
-                f"Large bold visual elements that fill the frame, generous spacing, big geometric shapes, "
+                f"Professional presentation background for slide about '{title}'. "
+                f"Context: {content_text}. "
+                f"Visual theme: {background}{extra_visuals}. "
+                f"Style elements: futuristic, modern, high-tech, professional, 4K quality, cinematic lighting. "
+                f"NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS, NO ALPHABET - completely text-free abstract background. "
+                f"Large bold visual elements filling the frame, generous spacing, big geometric shapes, "
                 f"high contrast, vibrant saturated colors, professional presentation background, "
-                f"16:9 widescreen format, 4K ultra HD, cinematic composition, "
-                f"perfect for text overlay, clean areas for adding titles"
+                f"16:9 widescreen format, 4K ultra HD, perfect for text overlay"
             )
             
             prompts.append({
