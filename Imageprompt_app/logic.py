@@ -616,15 +616,19 @@ class ImagePromptResearcher:
                     extra_visuals = f", {visuals}"
                     break
             
-            # Create prompt for clean background (NO TEXT - will be added programmatically)
+            # Create prompt with slide content context for relevant imagery
+            content_preview = ""
+            if isinstance(content, list) and content:
+                content_preview = " Related to: " + ", ".join([str(c)[:50] for c in content[:2]])
+            elif isinstance(content, str):
+                content_preview = f" Related to: {content[:100]}"
+            
             prompt = (
-                f"Professional business presentation slide background. "
-                f"{background}{extra_visuals}. "
-                f"CRITICAL: NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS anywhere in the image. "
-                f"Must be completely empty of text - text will be added later programmatically. "
-                f"Clean layout with large empty areas suitable for text overlay. "
-                f"High contrast between background and potential white text. "
-                f"Corporate professional style, minimalist, 4K quality, 16:9 format"
+                f"Professional presentation slide background for '{title}'.{content_preview}. "
+                f"Visual theme: {background}{extra_visuals}. "
+                f"Design should complement the topic with relevant imagery and icons. "
+                f"Clean professional layout with space for text overlay. "
+                f"Corporate infographic style, minimalist, 4K quality, 16:9 format"
             )
             
             prompts.append({
@@ -637,16 +641,20 @@ class ImagePromptResearcher:
         return prompts
     
     def regenerate_prompt_variation(self, original_prompt: str, variation_type: str = "minimal") -> str:
-        """Generate a variation of the image prompt while keeping it text-free."""
+        """Generate a variation of the image prompt with different color scheme."""
         color_swaps = [
-            ("cyan magenta", "electric blue pink"),
-            ("purple electric blue", "neon green violet"),
-            ("silver teal", "gold emerald"),
-            ("green", "orange"),
-            ("blue", "red"),
-            ("orange", "hot pink"),
-            ("gold", "platinum silver"),
-            ("teal", "coral")
+            ("deep blue", "vibrant purple"),
+            ("purple", "electric blue"),
+            ("teal", "emerald green"),
+            ("cyan", "amber orange"),
+            ("navy blue", "ruby red"),
+            ("charcoal", "midnight blue"),
+            ("slate gray", "forest green"),
+            ("magenta", "coral orange"),
+            ("green", "turquoise"),
+            ("red", "sapphire blue"),
+            ("indigo", "rose pink"),
+            ("violet", "gold")
         ]
         
         new_prompt = original_prompt
@@ -655,18 +663,7 @@ class ImagePromptResearcher:
                 new_prompt = new_prompt.replace(old, new, 1)  # Replace only first occurrence
                 break
         
-        # Ensure text-free constraints are maintained
-        text_free_phrases = [
-            "NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS",
-            "completely text-free image",
-            "Large bold visual elements",
-            "perfect for text overlay"
-        ]
-        
-        for phrase in text_free_phrases:
-            if phrase not in new_prompt:
-                new_prompt += f", {phrase}"
-        
+        # Add visual enhancements
         enhancements = [
             ", enhanced lighting, vivid saturated colors, glow effects",
             ", dramatic cinematic shadows, high contrast, depth",
