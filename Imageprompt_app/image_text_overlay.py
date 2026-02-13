@@ -71,9 +71,16 @@ class SlideTextOverlay:
                 small_font = ImageFont.load_default()
         
         # Add semi-transparent overlay at top for title
+        # Create an overlay that is pasted at the top of a full-size transparent image
+        # Image.alpha_composite requires both images to be the same size, so we compose
+        # a full-size RGBA image and paste the top overlay into it before compositing.
         overlay_height = 180
-        overlay = Image.new('RGBA', (self.width, overlay_height), (0, 0, 0, 120))
-        img = Image.alpha_composite(img.convert('RGBA'), overlay)
+        top_overlay = Image.new('RGBA', (self.width, overlay_height), (0, 0, 0, 120))
+        overlay_full = Image.new('RGBA', (self.width, self.height), (0, 0, 0, 0))
+        # Use the overlay itself as the mask so transparency is preserved
+        overlay_full.paste(top_overlay, (0, 0), top_overlay)
+        img = img.convert('RGBA')
+        img = Image.alpha_composite(img, overlay_full)
         draw = ImageDraw.Draw(img)
         
         # Add slide counter at top right
